@@ -20,11 +20,14 @@ typedef struct {
 
   // constant pool
   __value_array_t__ constants;
+
+  // line numbers 
+  int *lines;
 } __chunk_t__;
 
 void init_chunk(__chunk_t__ *chunk);
 void free_chunk(__chunk_t__ *chunk);
-void write_chunk(__chunk_t__ *chunk, uint8_t byte);
+void write_chunk(__chunk_t__ *chunk, uint8_t byte, int line);
 int add_constant(__chunk_t__ *chunk, __value_t__ value);
 
 #endif // clox_chunk_h

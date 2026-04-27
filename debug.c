@@ -12,9 +12,9 @@ static int simple_instruction(const char *name, int offset) {
 static int constant_instruction(const char *name, __chunk_t__ *chunk,
                                 int offset) {
 
-  uint8_t constant = chunk->code[offset + 1];
-  printf("%-16s %4d '", name, constant);
-  print_value(chunk->constants.values[constant]);
+  uint8_t constant_idx = chunk->code[offset + 1];
+  printf("%-16s %4d '", name, constant_idx);
+  print_value(chunk->constants.values[constant_idx]);
   printf("'\n");
 
   return offset + 2;
@@ -32,6 +32,12 @@ void disassemble_chunk(__chunk_t__ *chunk, const char *name) {
 int disassemble_instruction(__chunk_t__ *chunk, int offset) {
 
   printf("%04d ", offset);
+  if (offset > 0 &&
+      chunk->lines[offset] == chunk->lines[offset - 1]) {
+    printf("   | ");
+  } else {
+    printf("%04d ", chunk->lines[offset]);
+  }
 
   uint8_t instruction = chunk->code[offset];
   switch (instruction) {
