@@ -8,6 +8,11 @@
 // (add, substract, look up variable, etc)
 typedef enum {
   OP_RETURN,
+  OP_NEGATE,
+  OP_ADD,
+  OP_SUBTRACT,
+  OP_MULTIPLY,
+  OP_DIVIDE,
   OP_CONSTANT,
 } __op_code_t__;
 
@@ -21,7 +26,7 @@ typedef struct {
   // constant pool
   __value_array_t__ constants;
 
-  // line numbers 
+  // line numbers
   int *lines;
 } __chunk_t__;
 

@@ -2,11 +2,17 @@
 #define clox_vm_h
 
 #include "chunk.h"
+#include "value.h"
+
+#define STACK_MAX 256
 
 typedef struct {
   __chunk_t__ *chunk;
 
   uint_fast8_t *ip; // instruction pointer
+
+  __value_t__ stack[STACK_MAX];
+  __value_t__ *stack_top;
 } __vm_t__;
 
 typedef enum {
@@ -17,6 +23,8 @@ typedef enum {
 
 void init_vm();
 __interpret_result_t__ interpret(__chunk_t__ *chunk);
+void push(__value_t__ value);
+__value_t__ pop();
 void free_vm();
 
 #endif // clox_vm_h
