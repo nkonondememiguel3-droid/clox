@@ -9,17 +9,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(${PROJECT_NAME} 
   main.c
-  memory.c
-  memory.h
-  common.c
-  common.h
-  chunk.c
-  chunk.h
-  debug.h
-  debug.c
-  value.c
-  value.h
-  vm.h
-  vm.c
+  memory.c memory.h
+  common.c common.h
+  chunk.c chunk.h
+  debug.h debug.c
+  value.c value.h
+  vm.h vm.c
+  compiler.c compiler.h
+  scanner.h scanner.c
 )
 

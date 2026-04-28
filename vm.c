@@ -1,5 +1,6 @@
 #include "vm.h"
 #include "chunk.h"
+#include "compiler.h"
 #include "common.h"
 #include "debug.h"
 #include "value.h"
@@ -87,10 +88,8 @@ static __interpret_result_t__ run() {
 #undef BINARY_OP
 }
 
-__interpret_result_t__ interpret(__chunk_t__ *chunk) {
+__interpret_result_t__ interpret(const char *source) {
 
-  vm.chunk = chunk;
-  vm.ip = vm.chunk->code;
-
+  compile(source);
   return run();
 }
