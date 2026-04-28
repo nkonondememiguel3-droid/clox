@@ -19,5 +19,7 @@ add_executable(${PROJECT_NAME}
   debug.c
   value.c
   value.h
+  vm.h
+  vm.c
 )
 
