@@ -1,7 +1,7 @@
 #include "vm.h"
 #include "chunk.h"
-#include "compiler.h"
 #include "common.h"
+#include "compiler.h"
 #include "debug.h"
 #include "value.h"
 #include <stdio.h>
@@ -9,11 +9,11 @@
 // global vm(virtual memory)
 __vm_t__ vm;
 
-static void reset_stack() { vm.stack_top = vm.stack; }
+static void reset_stack(void) { vm.stack_top = vm.stack; }
 
-void init_vm() { reset_stack(); }
+void init_vm(void) { reset_stack(); }
 
-void free_vm() {}
+void free_vm(void) {}
 
 void push(__value_t__ value) {
 
@@ -21,13 +21,14 @@ void push(__value_t__ value) {
   vm.stack_top++;
 }
 
-__value_t__ pop() {
+__value_t__ pop(void) {
 
   vm.stack_top--;
   return *vm.stack_top;
 }
 
-static __interpret_result_t__ run() {
+#if 0
+static __interpret_result_t__ run(void) {
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
 #define BINARY_OP(op)                                                          \
@@ -80,6 +81,8 @@ static __interpret_result_t__ run() {
       printf("\n");
       return INTERPRET_OK;
     }
+    default:
+      break;
     }
   }
 
@@ -87,9 +90,11 @@ static __interpret_result_t__ run() {
 #undef READ_BYTE
 #undef BINARY_OP
 }
+#endif
 
 __interpret_result_t__ interpret(const char *source) {
 
   compile(source);
-  return run();
+  return INTERPRET_OK;
+  /* return run(); */
 }

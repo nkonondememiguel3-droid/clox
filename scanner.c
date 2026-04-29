@@ -17,7 +17,7 @@ void init_scanner(const char *source) {
 }
 
 //    static functins
-static bool is_at_end() { return *__scanner__.current == '\0'; }
+static bool is_at_end(void) { return *__scanner__.current == '\0'; }
 
 static __token_t__ make_token(__token_type_t__ type) {
 
@@ -41,7 +41,7 @@ static __token_t__ error_token(const char *error_message) {
   return token;
 }
 
-static char advance() {
+static char advance(void) {
   __scanner__.current++;
   return __scanner__.current[-1];
 }
@@ -57,15 +57,15 @@ static bool match(char expected) {
   return true;
 }
 
-static char peek() { return *__scanner__.current; }
+static char peek(void) { return *__scanner__.current; }
 
-static char peek_next() {
+static char peek_next(void) {
   if (is_at_end())
     return '\0';
   return __scanner__.current[1];
 }
 
-static void skip_whitespace() {
+static void skip_whitespace(void) {
 
   for (;;) {
     char c = peek();
@@ -97,8 +97,54 @@ static void skip_whitespace() {
   }
 }
 
+static __token_t__ string(void) {
+
+  while (peek() != '"' && !is_at_end()) {
+    if (peek() == '\n')
+      __scanner__.line++;
+    advance();
+  }
+
+  if (is_at_end())
+    return error_token("Unterminated string.");
+
+  advance();
+  return make_token(TOKEN_STRING);
+}
+
+static bool is_digit(char c) { return c >= '0' && c <= '9'; }
+
+static bool is_alpha(char c) {
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+}
+
+static __token_t__ number(void) {
+
+  while (is_digit(peek()))
+    advance();
+
+  if (peek() == '.' && is_digit(peek_next())) {
+    advance();
+
+    while (is_digit(peek()))
+      advance();
+  }
+
+  return make_token(TOKEN_NUMBER);
+}
+
+static __token_type_t__ identifier_type(void) { return TOKEN_IDENTIFIER; }
+
+static __token_t__ identifier(void) {
+
+  while (is_alpha(peek()) || is_digit(peek()))
+    advance();
+
+  return make_token(identifier_type());
+}
+
 // ------------------------
-__token_t__ scan_token() {
+__token_t__ scan_token(void) {
   skip_whitespace();
 
   __scanner__.start = __scanner__.current;
@@ -107,6 +153,12 @@ __token_t__ scan_token() {
     return make_token(TOKEN_EOF);
 
   char c = advance();
+
+  if (is_alpha(c))
+    return identifier();
+
+  if (is_digit(c))
+    return number();
 
   switch (c) {
   // Single character token.
@@ -143,8 +195,12 @@ __token_t__ scan_token() {
   case '>':
     return make_token(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
 
-    /* default: */
-    /*   return make_token(TOKEN_EOF); */
+  // literals
+  case '"':
+    return string();
+
+  default:
+    return make_token(TOKEN_EOF);
   }
 
   return error_token("Unexpected character.");

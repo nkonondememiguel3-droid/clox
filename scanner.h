@@ -60,6 +60,6 @@ typedef struct {
 } __token_t__;
 
 void init_scanner(const char *source);
-__token_t__ scan_token();
+__token_t__ scan_token(void);
 
 #endif // clox_scanner_h

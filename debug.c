@@ -24,7 +24,7 @@ void disassemble_chunk(__chunk_t__ *chunk, const char *name) {
 
   printf("== %s ==\n", name);
 
-  for (size_t offset = 0; offset < chunk->count;) {
+  for (int offset = 0; offset < chunk->count;) {
     offset = disassemble_instruction(chunk, offset);
   }
 }
