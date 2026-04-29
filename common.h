@@ -19,6 +19,6 @@
   #define ALLOCATOR
 #endif
 
-#define DEBUG_TRACE_EXECUTION
+/* #define DEBUG_TRACE_EXECUTION */
 
 #endif // clox_common_h

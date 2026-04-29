@@ -21,10 +21,10 @@ typedef enum {
   INTERPRET_RUNTIME_ERROR
 } __interpret_result_t__;
 
-void init_vm();
+void init_vm(void);
 __interpret_result_t__ interpret(const char *source);
 void push(__value_t__ value);
-__value_t__ pop();
-void free_vm();
+__value_t__ pop(void);
+void free_vm(void);
 
 #endif // clox_vm_h

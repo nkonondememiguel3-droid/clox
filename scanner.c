@@ -1,4 +1,5 @@
 #include "scanner.h"
+#include "chunk.h"
 #include "common.h"
 #include <string.h>
 
@@ -45,8 +46,61 @@ static char advance() {
   return __scanner__.current[-1];
 }
 
+static bool match(char expected) {
+  if (is_at_end())
+    return false;
+
+  if (*__scanner__.current != expected)
+    return false;
+
+  __scanner__.current++;
+  return true;
+}
+
+static char peek() { return *__scanner__.current; }
+
+static char peek_next() {
+  if (is_at_end())
+    return '\0';
+  return __scanner__.current[1];
+}
+
+static void skip_whitespace() {
+
+  for (;;) {
+    char c = peek();
+
+    switch (c) {
+    case ' ':
+    case '\r':
+    case '\t':
+      advance();
+      break;
+
+    case '\n':
+      __scanner__.line++;
+      advance();
+      break;
+
+    case '/':
+      if (peek_next() == '/') {
+        while (peek() != '\n' && !is_at_end())
+          advance();
+      } else {
+        return;
+      }
+      break;
+
+    default:
+      return;
+    }
+  }
+}
+
 // ------------------------
 __token_t__ scan_token() {
+  skip_whitespace();
+
   __scanner__.start = __scanner__.current;
 
   if (is_at_end())
@@ -89,8 +143,8 @@ __token_t__ scan_token() {
   case '>':
     return make_token(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
 
-  default:
-    return make_token(TOKEN_EOF);
+    /* default: */
+    /*   return make_token(TOKEN_EOF); */
   }
 
   return error_token("Unexpected character.");

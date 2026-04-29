@@ -5,7 +5,7 @@
 #include "common.h"
 #include "vm.h"
 
-static void repl() {
+static void repl(void) {
   char line[256];
 
   for (;;) {
@@ -20,8 +20,8 @@ static void repl() {
   }
 }
 
-__attribute__((malloc, malloc(free, 1), warn_unused_result)) static char *
-read_file(const char *path) {
+/* __attribute__((malloc, malloc(free, 1), warn_unused_result)) static char * */
+ALLOCATOR static char *read_file(const char *path) {
 
   FILE *file = fopen(path, "rb");
   if (file == NULL) {
@@ -30,17 +30,17 @@ read_file(const char *path) {
   }
 
   fseek(file, 0L, SEEK_END);
-  size_t file_size = ftell(file);
+  long file_size = ftell(file);
   rewind(file);
 
-  char *buffer = (char *)malloc(file_size + 1);
+  char *buffer = (char *)malloc((size_t)file_size + 1);
   if (buffer == NULL) {
     fprintf(stderr, "Not enough memory to read \"%s\".\n", path);
     exit(74);
   }
 
-  size_t bytes_read = fread(buffer, sizeof(char), file_size, file);
-  if (bytes_read < file_size) {
+  size_t bytes_read = fread(buffer, sizeof(char), (size_t)file_size, file);
+  if (bytes_read < (size_t)file_size) {
     fprintf(stderr, "Could not read file \"%s\".\n", path);
     exit(74);
   }
