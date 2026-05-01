@@ -16,6 +16,11 @@ static void repl(void) {
       break;
     }
 
+    if (strncmp(line, ".exit", sizeof(".exit")) == 0) {
+      printf("Goodbye!");
+      break;
+    }
+
     interpret(line);
   }
 }
