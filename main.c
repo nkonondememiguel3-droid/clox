@@ -16,8 +16,8 @@ static void repl(void) {
       break;
     }
 
-    if (strncmp(line, ".exit", sizeof(".exit")) == 0) {
-      printf("Goodbye!");
+    if (strncmp(line, ".exit", 5) == 0) {
+      printf("Goodbye!!!\n");
       break;
     }
 
