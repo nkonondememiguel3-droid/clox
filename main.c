@@ -25,7 +25,6 @@ static void repl(void) {
   }
 }
 
-/* __attribute__((malloc, malloc(free, 1), warn_unused_result)) static char * */
 ALLOCATOR static char *read_file(const char *path) {
 
   FILE *file = fopen(path, "rb");
