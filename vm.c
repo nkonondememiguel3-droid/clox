@@ -27,7 +27,6 @@ __value_t__ pop(void) {
   return *vm.stack_top;
 }
 
-#if 0
 static __interpret_result_t__ run(void) {
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
@@ -90,11 +89,22 @@ static __interpret_result_t__ run(void) {
 #undef READ_BYTE
 #undef BINARY_OP
 }
-#endif
 
 __interpret_result_t__ interpret(const char *source) {
 
-  compile(source);
-  return INTERPRET_OK;
-  /* return run(); */
+  __chunk_t__ chunk;
+  init_chunk(&chunk);
+
+  if ( !compile(source, &chunk) ) {
+    free_chunk(&chunk);
+    return INTERPRET_COMPILE_ERROR;
+  }
+
+  vm.chunk = &chunk;
+  vm.ip = vm.chunk->code;
+
+  __interpret_result_t__ result = run();
+
+  free_chunk(&chunk);
+  return result;
 }
