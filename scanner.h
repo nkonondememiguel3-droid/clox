@@ -12,7 +12,7 @@ typedef enum {
   TOKEN_MINUS,
   TOKEN_PLUS,
   TOKEN_SEMICOLON,
-  TOKNE_SLASH,
+  TOKEN_SLASH,
   TOKEN_STAR,
 
   // One or two character tokens.
