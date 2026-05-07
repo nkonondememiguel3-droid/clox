@@ -17,6 +17,21 @@ typedef struct {
 __parser_t__ parser;
 __chunk_t__ *compiling_chunk;
 
+// all the clox precedence operator in order;.
+typedef enum {
+  PREC_NONE,
+  PREC_ASSIGNMENT,  // =
+  PREC_OR,          // or
+  PREC_AND,         // and
+  PREC_EQUALITY,    // == !=
+  PREC_COMPARAISON, // < > <= >=
+  PREC_TERM,        // + -
+  PREC_FACTOR,      // * /
+  PREC_UNARY,       // ! -
+  PREC_CALL,        // . ()
+  PREC_PRIMARY
+} __precedence_type__;
+
 static __chunk_t__ *current_chunk(void) { return compiling_chunk; }
 
 static void emit_byte(uint8_t byte) {
@@ -95,7 +110,26 @@ static void emit_constant(__value_t__ constant) {
   emit_bytes(OP_CONSTANT, make_constant(constant));
 }
 
-static void expression(void) {}
+static void parse_precedence(__precedence_type__ precedence) {}
+
+static void expression(void) { parse_precedence(PREC_ASSIGNMENT); }
+
+static void unary(void) {
+  __token_type_t__ operator_type = parser.previous.type;
+
+  // compile the operand.
+  parse_precedence(PREC_UNARY);
+
+  // emit the operator instruction.
+  switch (operator_type) {
+  case TOKEN_MINUS:
+    emit_byte(OP_NEGATE);
+    break;
+
+  default:
+    return;
+  }
+}
 
 static void grouping(void) {
   expression();
