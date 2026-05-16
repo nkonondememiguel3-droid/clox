@@ -250,7 +250,7 @@ __token_t__ scan_token(void) {
   case '+':
     return make_token(TOKEN_PLUS);
   case '/':
-    return make_token(TOKNE_SLASH);
+    return make_token(TOKEN_SLASH);
   case '*':
     return make_token(TOKEN_STAR);
 

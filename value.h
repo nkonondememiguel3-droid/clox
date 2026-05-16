@@ -8,7 +8,7 @@ typedef double __value_t__;
 typedef struct {
   int capacity;
   int count;
-  __value_t__ *values;
+  __value_t__ *values; // constant pool
 } __value_array_t__ ;
 
 void init_value_array(__value_array_t__ *array);

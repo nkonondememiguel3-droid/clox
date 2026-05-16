@@ -14,8 +14,8 @@ typedef struct {
   bool panic_mode;
 } __parser_t__;
 
-__parser_t__ parser;
-__chunk_t__ *compiling_chunk;
+__parser_t__ parser_t;
+__chunk_t__ *compiling_chunk_t;
 
 // all the clox precedence operator in order;.
 typedef enum {
@@ -40,15 +40,15 @@ typedef struct {
   __precedence_type__ precedence;
 } __parse_rule__;
 
-static void expression();
+static void expression(void);
 static __parse_rule__ *get_rule(__token_type_t__ type);
 static void parse_precedence(__precedence_type__ precedence);
+static void advance(void);
+static void error(const char *message);
 
-static __chunk_t__ *current_chunk(void) { return compiling_chunk; }
+static __chunk_t__ *current_chunk(void) { return compiling_chunk_t; }
 
-static void emit_byte(uint8_t byte) {
-  write_chunk(current_chunk(), byte, parser.previous.line);
-}
+static void emit_byte(uint8_t byte) { write_chunk(current_chunk(), byte, parser_t.previous.line); }
 
 static void emit_bytes(uint8_t byte_1, uint8_t byte_2) {
   emit_byte(byte_1);
@@ -57,9 +57,9 @@ static void emit_bytes(uint8_t byte_1, uint8_t byte_2) {
 
 static void error_at(__token_t__ *token, const char *message) {
   // if we already are in panic mode, we discard the current error
-  if (parser.panic_mode)
+  if (parser_t.panic_mode)
     return;
-  parser.panic_mode = true;
+  parser_t.panic_mode = true;
 
   fprintf(stderr, "[line %d] Error", token->line);
 
@@ -72,52 +72,60 @@ static void error_at(__token_t__ *token, const char *message) {
   }
 
   fprintf(stderr, ": %s\n", message);
-  parser.had_error = true;
+  parser_t.had_error = true;
 }
 
-static void parse_precedence(__precedence_type__ precedence) {}
+static void parse_precedence(__precedence_type__ precedence) {
+  advance();
 
-static void binary(void) {
-
-  __token_type_t__ operator_type = parser.previous.type;
-  __parse_rule__ *rule = get_rule(operator_type);
-
-  parse_precedence((__precedence_type__)(rule->precedence + 1));
-
-  switch (operator_type) {
-  case TOKEN_PLUS:
-    emit_byte(OP_ADD);
-    break;
-  case TOKEN_MINUS:
-    emit_byte(OP_SUBTRACT);
-    break;
-  case TOKEN_STAR:
-    emit_byte(OP_MULTIPLY);
-    break;
-  case TOKEN_SLASH:
-    emit_byte(OP_DIVIDE);
-    break;
-
-  default:
+  __parser_fn__ prefix_rule = get_rule(parser_t.previous.type)->prefix;
+  if (prefix_rule == NULL) {
+    error("Expect expression.");
     return;
+  }
+
+  prefix_rule();
+
+  while (precedence <= get_rule(parser_t.current.type)->precedence) {
+    advance();
+    __parser_fn__ infix_rule = get_rule(parser_t.previous.type)->infix;
+    infix_rule();
   }
 }
 
-static void error(const char *message) { error_at(&parser.previous, message); }
+static void binary(void) {
+
+  __token_type_t__ operator_type = parser_t.previous.type;
+  __parse_rule__ *rule = get_rule(operator_type);
+
+  /* each binary operator's right-hand operand precedence is one level higher than its onw. */
+  parse_precedence((__precedence_type__)(rule->precedence + 1));
+
+  switch (operator_type) {
+  case TOKEN_PLUS: emit_byte(OP_ADD); break;
+  case TOKEN_MINUS: emit_byte(OP_SUBTRACT); break;
+  case TOKEN_STAR: emit_byte(OP_MULTIPLY); break;
+  case TOKEN_SLASH: emit_byte(OP_DIVIDE); break;
+
+  default: return;
+  }
+}
+
+static void error(const char *message) { error_at(&parser_t.previous, message); }
 
 static void error_at_current(const char *message) {
-  error_at(&parser.current, message);
+  error_at(&parser_t.current, message);
 }
 
 static uint8_t make_constant(__value_t__ constant) {
 
-  int constant_idx = add_constant(compiling_chunk, constant);
+  int constant_idx = add_constant(compiling_chunk_t, constant);
   if (constant_idx > UINT8_MAX) {
     error("Too many constants in a chunk.");
     return 0;
   }
 
-  return (uint8_t)constant;
+  return (uint8_t)constant_idx;
 }
 
 static void emit_constant(__value_t__ constant) {
@@ -127,7 +135,7 @@ static void emit_constant(__value_t__ constant) {
 static void expression(void) { parse_precedence(PREC_ASSIGNMENT); }
 
 static void unary(void) {
-  __token_type_t__ operator_type = parser.previous.type;
+  __token_type_t__ operator_type = parser_t.previous.type;
 
   // compile the operand.
   parse_precedence(PREC_UNARY);
@@ -144,25 +152,25 @@ static void unary(void) {
 }
 
 static void number(void) {
-  double value = strtod(parser.previous.start, NULL);
+  double value = strtod(parser_t.previous.start, NULL);
   emit_constant(value);
 }
 
 static void advance(void) {
 
-  parser.previous = parser.current;
+  parser_t.previous = parser_t.current;
 
   for (;;) {
-    parser.current = scan_token();
-    if (parser.current.type != TOKEN_ERROR)
+    parser_t.current = scan_token();
+    if (parser_t.current.type != TOKEN_ERROR)
       break;
 
-    error_at_current(parser.current.start);
+    error_at_current(parser_t.current.start);
   }
 }
 
 static void consume(__token_type_t__ token_type, const char *message) {
-  if (parser.current.type == token_type) {
+  if (parser_t.current.type == token_type) {
     advance();
     return;
   }
@@ -218,21 +226,28 @@ __parse_rule__ rules[] = {
     [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
 };
 
-static __parse_rule__ *get_rule(__token_type_t__ type) {
-  return &rules[type];
-}
+static __parse_rule__ *get_rule(__token_type_t__ type) { return &rules[type]; }
 
 static void emit_return(void) { emit_byte(OP_RETURN); }
 
-static void end_compiler(void) { emit_return(); }
+static void end_compiler(void) {
+  emit_return();
+
+#ifdef DEBUG_PRINT_CODE
+  if (!parser_t.had_error) {
+    disassemble_chunk(current_chunk(), "code");
+  }
+#endif
+
+}
 
 bool compile(const char *source, __chunk_t__ *chunk) {
 
-  parser.had_error = false;
-  parser.panic_mode = false;
+  parser_t.had_error = false;
+  parser_t.panic_mode = false;
 
   init_scanner(source);
-  compiling_chunk = chunk;
+  compiling_chunk_t = chunk;
 
   advance();
 
@@ -241,5 +256,5 @@ bool compile(const char *source, __chunk_t__ *chunk) {
   consume(TOKEN_EOF, "Expect end of expression");
   end_compiler();
 
-  return !parser.had_error;
+  return !parser_t.had_error;
 }

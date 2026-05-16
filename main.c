@@ -16,8 +16,15 @@ static void repl(void) {
       break;
     }
 
-    if (strncmp(line, ".exit", 5) == 0) {
+    // TODO: add a better '.exit' handler by implementing a leading&heading
+    // space clean up and new line removal.
+    if ((strncmp(line, ".exit", 5) == 0) && (strlen(line) == 6L)) {
       break;
+    }
+
+    if (strlen(line) == 1L) {
+      printf("emply line.%lu\n", strlen(line));
+      continue;
     }
 
     interpret(line);

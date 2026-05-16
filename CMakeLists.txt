@@ -17,6 +17,7 @@ set(CMAKE_C_FLAGS_DEBUG "-g -O0")
 # Optional debug trace macro
 if(ENABLE_DEBUG)
     add_compile_definitions(DEBUG_TRACE_EXECUTION)
+    add_compile_definitions(DEBUG_PRINT_CODE)
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
